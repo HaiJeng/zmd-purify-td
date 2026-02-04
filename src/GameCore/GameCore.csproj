@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- 目标框架：如果你本机是 .NET 6 就写 net6.0 -->
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- 打成类库（.dll），方便以后给 Unity / 其他程序引用 -->
+    <OutputType>Library</OutputType>
+
+    <!-- 下面两个只是把程序集名/命名空间默认前缀定成 GameCore -->
+    <AssemblyName>GameCore</AssemblyName>
+    <RootNamespace>GameCore</RootNamespace>
+
+    <!-- 可选：开启隐式 using 和可空引用类型，写代码更舒服一点 -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="resource\static\towers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
