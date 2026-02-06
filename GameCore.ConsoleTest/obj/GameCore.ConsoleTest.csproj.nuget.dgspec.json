@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\测试\\zmd-post\\src\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj": {}
+    "F:\\测试\\zmd-post\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj": {}
   },
   "projects": {
-    "F:\\测试\\zmd-post\\src\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj": {
+    "F:\\测试\\zmd-post\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\测试\\zmd-post\\src\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj",
+        "projectUniqueName": "F:\\测试\\zmd-post\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj",
         "projectName": "GameCore.ConsoleTest",
-        "projectPath": "F:\\测试\\zmd-post\\src\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj",
+        "projectPath": "F:\\测试\\zmd-post\\GameCore.ConsoleTest\\GameCore.ConsoleTest.csproj",
         "packagesPath": "C:\\Users\\d4127\\.nuget\\packages\\",
-        "outputPath": "F:\\测试\\zmd-post\\src\\GameCore.ConsoleTest\\obj\\",
+        "outputPath": "F:\\测试\\zmd-post\\GameCore.ConsoleTest\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\d4127\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,8 +26,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj": {
-                "projectPath": "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj"
+              "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj": {
+                "projectPath": "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj"
               }
             }
           }
@@ -341,14 +341,14 @@
         }
       }
     },
-    "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj": {
+    "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj",
+        "projectUniqueName": "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj",
         "projectName": "GameCore",
-        "projectPath": "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj",
+        "projectPath": "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj",
         "packagesPath": "C:\\Users\\d4127\\.nuget\\packages\\",
-        "outputPath": "F:\\测试\\zmd-post\\src\\GameCore\\obj\\",
+        "outputPath": "F:\\测试\\zmd-post\\GameCore\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\d4127\\AppData\\Roaming\\NuGet\\NuGet.Config"

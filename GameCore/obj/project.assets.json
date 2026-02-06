@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj",
+      "projectUniqueName": "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj",
       "projectName": "GameCore",
-      "projectPath": "F:\\测试\\zmd-post\\src\\GameCore\\GameCore.csproj",
+      "projectPath": "F:\\测试\\zmd-post\\GameCore\\GameCore.csproj",
       "packagesPath": "C:\\Users\\d4127\\.nuget\\packages\\",
-      "outputPath": "F:\\测试\\zmd-post\\src\\GameCore\\obj\\",
+      "outputPath": "F:\\测试\\zmd-post\\GameCore\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\d4127\\AppData\\Roaming\\NuGet\\NuGet.Config"
