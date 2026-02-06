@@ -18,4 +18,6 @@ public class ResourceManager {
         }
         return false;
     }
+    
+    public float CurrentResources => resources;
 }

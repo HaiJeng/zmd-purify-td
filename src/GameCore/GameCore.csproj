@@ -7,6 +7,7 @@
     <!-- 打成类库（.dll），方便以后给 Unity / 其他程序引用 -->
     <OutputType>Library</OutputType>
 
+    <!-- <OutputType>Exe</OutputType> -->
     <!-- 下面两个只是把程序集名/命名空间默认前缀定成 GameCore -->
     <AssemblyName>GameCore</AssemblyName>
     <RootNamespace>GameCore</RootNamespace>
@@ -17,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="resource\static\towers.json">
+    <None Include="Resources\static\towers.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

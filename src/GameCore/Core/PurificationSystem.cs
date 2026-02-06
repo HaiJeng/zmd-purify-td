@@ -6,7 +6,28 @@ public class PurificationSystem
 {
     private GridCell[,] grid;
     private List<Tower> towers;
+    public PurificationSystem(GridCell[,] grid, List<Tower> towers)
+    {
+        this.grid = grid;
+        this.towers = towers;
+    }
+    // 计算净化进度
+    public float CalculatePurificationProgress()
+    {
+        int totalCells = grid.GetLength(0) * grid.GetLength(1);
+        float totalPollution = 0;
 
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                totalPollution += grid[x, y].Pollution;
+            }
+        }
+
+        float avgPollution = totalPollution / totalCells;
+        return Math.Clamp(1f - avgPollution / 80f, 0f, 1f);
+    }
     // 每回合执行净化
     public void ProcessPurification(float deltaTime)
     {

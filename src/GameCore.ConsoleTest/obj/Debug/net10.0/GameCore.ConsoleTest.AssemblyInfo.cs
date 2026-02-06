@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("GameCore")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("GameCore.ConsoleTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d2f91d2f05494729ceddfc431e9f0e4cf52d0131")]
-[assembly: System.Reflection.AssemblyProductAttribute("GameCore")]
-[assembly: System.Reflection.AssemblyTitleAttribute("GameCore")]
+[assembly: System.Reflection.AssemblyProductAttribute("GameCore.ConsoleTest")]
+[assembly: System.Reflection.AssemblyTitleAttribute("GameCore.ConsoleTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。
