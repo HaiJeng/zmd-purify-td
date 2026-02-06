@@ -1,3 +1,25 @@
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-.vscode/settings.json
+# IDE配置文件
+.vscode/
+.qoder/
+
+# .NET编译输出目录
+**/bin/
+**/obj/
+
+# Visual Studio相关
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+
+GameCore/bin/
+GameCore/obj/
+GameCore.ConsoleTest/bin/
+GameCore.ConsoleTest/obj/
