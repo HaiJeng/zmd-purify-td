@@ -1,0 +1,311 @@
+# 阶段 1.5：控制台验证计划
+
+## 目标
+在 Unity 开发之前，通过控制台程序验证核心玩法循环的逻辑正确性和数值平衡性。
+
+## 当前已完成
+- [x] 阶段1规则文档完成
+- [x] C#核心逻辑框架搭建
+  - GridCell、Tower数据结构
+  - PurificationSystem（净化+腐蚀）
+  - ResourceManager（资源系统）
+  - BacklashSystem（反扑机制）
+  - TowerConfig（配置读取）
+
+## 待完成任务清单
+
+### 1. 补充缺失的C#逻辑模块
+
+#### 1.1 地图初始化逻辑
+**文件**：`src/GameCore/Grid/GridFactory.cs`
+**任务**：
+- 实现 `CreateDefaultGrid(int width, int height)` 方法
+- 按规则生成12×12地图
+- 中心4×4为安全区（pollution=0）
+- 外圈按曼哈顿距离设置污染值（40-100）
+
+```csharp
+public static class GridFactory
+{
+    public static GridCell[,] CreateDefaultGrid(int width, int height)
+    {
+        var grid = new GridCell[width, height];
+        int centerX = width / 2;
+        int centerY = height / 2;
+        int safeRadius = 2; // 4x4安全区
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                float pollution = 0;
+                int distance = Math.Abs(x - centerX) + Math.Abs(y - centerY);
+                
+                if (distance > safeRadius)
+                {
+                    // 按距离设置污染值
+                    if (distance <= 2) pollution = Random.Shared.Next(40, 61);
+                    else if (distance <= 4) pollution = Random.Shared.Next(60, 81);
+                    else pollution = Random.Shared.Next(80, 101);
+                }
+                
+                grid[x, y] = new GridCell(x, y, pollution);
+            }
+        }
+        return grid;
+    }
+}
+```
+
+#### 1.2 净化进度计算
+**文件**：`src/GameCore/Core/PurificationSystem.cs`
+**任务**：
+- 添加 `CalculatePurificationProgress()` 方法
+- 计算全局净化度（0-1）
+
+```csharp
+public float CalculatePurificationProgress()
+{
+    int totalCells = grid.GetLength(0) * grid.GetLength(1);
+    float totalPollution = 0;
+
+    for (int x = 0; x < grid.GetLength(0); x++)
+    {
+        for (int y = 0; y < grid.GetLength(1); y++)
+        {
+            totalPollution += grid[x, y].Pollution;
+        }
+    }
+
+    float avgPollution = totalPollution / totalCells;
+    return Math.Clamp(1f - avgPollution / 80f, 0f, 1f);
+}
+```
+
+#### 1.3 回合控制器
+**文件**：`src/GameCore/Core/GameLoop.cs`
+**任务**：
+- 整合所有系统
+- 实现回合制游戏循环
+- 处理胜负判断
+
+```csharp
+public class GameLoop
+{
+    private GridCell[,] grid;
+    private List<Tower> towers = new();
+    private ResourceManager resource = new();
+    private PurificationSystem purification;
+    private BacklashSystem backlash = new();
+    private float time = 0f;
+
+    public GameLoop(int width, int height)
+    {
+        grid = GridFactory.CreateDefaultGrid(width, height);
+        purification = new PurificationSystem(grid, towers);
+    }
+
+    public void Tick(float deltaTime)
+    {
+        time += deltaTime;
+
+        // 1. 资源增长
+        resource.Update(deltaTime);
+
+        // 2. 净化 + 腐蚀
+        purification.ProcessPurification(deltaTime);
+
+        // 3. 计算进度，触发反扑
+        float progress = purification.CalculatePurificationProgress();
+        backlash.CheckAndTriggerBacklash(progress);
+
+        // 4. 反扑计时
+        backlash.UpdateBacklash(deltaTime);
+
+        // 5. 胜负判断
+        CheckWinLose();
+    }
+
+    private void CheckWinLose()
+    {
+        // 胜利条件：所有格子 pollution = 0
+        bool isWin = true;
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                if (grid[x, y].Pollution > 0)
+                {
+                    isWin = false;
+                    break;
+                }
+            }
+            if (!isWin) break;
+        }
+
+        if (isWin)
+        {
+            Console.WriteLine($"🎉 胜利！用时 {time} 秒");
+            return;
+        }
+
+        // 失败条件：所有塔损坏且资源不足重建
+        bool allTowersBroken = towers.All(t => t.durability <= 0);
+        bool cannotRebuild = resource.CurrentResources < 10; // 基础塔造价
+
+        if (allTowersBroken && cannotRebuild)
+        {
+            Console.WriteLine($"💀 失败！净化能力丧失，用时 {time} 秒");
+        }
+    }
+
+    public void PlaceTower(int x, int y, TowerConfig config)
+    {
+        if (resource.SpendResources(config.cost))
+        {
+            var tower = new Tower(x, y, config.cleanPower, config.range)
+            {
+                maxDurability = config.maxDurability,
+                durability = config.maxDurability
+            };
+            towers.Add(tower);
+            Console.WriteLine($"🏗️ 在 ({x},{y}) 建造塔，剩余资源: {resource.CurrentResources}");
+        }
+        else
+        {
+            Console.WriteLine("❌ 资源不足！");
+        }
+    }
+}
+```
+
+### 2. 控制台测试程序
+
+#### 2.1 创建测试项目
+**文件**：`src/GameCore.ConsoleTest/GameCore.ConsoleTest.csproj`
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameCore\GameCore.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+#### 2.2 测试脚本
+**文件**：`src/GameCore.ConsoleTest/Program.cs`
+```csharp
+using GameCore.Core;
+using GameCore.Config;
+using GameCore.Grid;
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine("=== 2D 净化塔防控制台测试 ===\n");
+
+        // 加载配置
+        var configLoader = new ConfigLoader();
+        var towerConfigs = configLoader.LoadTowers("resource/static/towers.json");
+
+        // 初始化游戏
+        var game = new GameLoop(12, 12);
+        
+        // 初始状态
+        Console.WriteLine($"初始资源: 20");
+        Console.WriteLine($"地图尺寸: 12×12");
+        Console.WriteLine($"安全区: 中心 4×4\n");
+
+        // 模拟游戏流程
+        Console.WriteLine("开始模拟游戏流程...\n");
+        
+        // 前10回合：观察资源增长
+        for (int i = 0; i < 10; i++)
+        {
+            game.Tick(1.0f);
+            if (i % 5 == 0)
+            {
+                Console.WriteLine($"第 {i} 回合 - 资源: 待实现");
+            }
+        }
+
+        // 建造第一座塔
+        Console.WriteLine("\n--- 建造第一座基础净化塔 ---");
+        game.PlaceTower(5, 5, towerConfigs[0]);
+
+        // 继续游戏到50%净化度
+        Console.WriteLine("\n--- 继续净化到50%触发反扑 ---");
+        while (true)
+        {
+            game.Tick(1.0f);
+            // 这里需要添加进度显示逻辑
+            break; // 暂时跳出避免无限循环
+        }
+
+        Console.WriteLine("\n测试完成！");
+        Console.ReadKey();
+    }
+}
+```
+
+### 3. 验证要点
+
+#### 3.1 核心机制验证
+- [ ] 资源系统：起始20，每回合+2
+- [ ] 建塔逻辑：检查资源、位置、实例化
+- [ ] 净化效果：塔范围内格子污染值下降
+- [ ] 腐蚀机制：污染区塔耐久随时间下降
+- [ ] 反扑触发：净化度50%时触发，持续10回合
+- [ ] 胜利条件：所有格子污染=0
+- [ ] 失败条件：塔全坏+资源不足
+
+#### 3.2 数值平衡测试
+- [ ] 塔的净化效率是否合理
+- [ ] 塔耐久消耗速率是否平衡
+- [ ] 反扑事件强度是否适中
+- [ ] 游戏时长是否在合理范围（建议30-60分钟）
+
+### 4. 预期输出格式
+```
+=== 2D 净化塔防控制台测试 ===
+
+初始资源: 20
+地图尺寸: 12×12
+安全区: 中心 4×4
+
+开始模拟游戏流程...
+
+第 0 回合 - 资源: 20, 净化度: 0%
+第 5 回合 - 资源: 30, 净化度: 12%
+第 10 回合 - 资源: 40, 净化度: 25%
+
+--- 建造第一座基础净化塔 ---
+🏗️ 在 (5,5) 建造塔，剩余资源: 30
+
+--- 净化进行中 ---
+第 15 回合 - 资源: 32, 净化度: 38%
+第 20 回合 - 资源: 34, 净化度: 45%
+第 25 回合 - 资源: 36, 净化度: 52% ⚠️ 触发反扑！
+
+--- 反扑期间 ---
+第 30 回合 - 资源: 38, 净化度: 55% (净化效率减半)
+第 35 回合 - 资源: 40, 净化度: 58%
+
+--- 反扑结束 ---
+第 40 回合 - 资源: 42, 净化度: 65% (恢复正常)
+
+第 50 回合 - 资源: 44, 净化度: 80%
+第 60 回合 - 资源: 46, 净化度: 95%
+
+🎉 胜利！用时 60 秒，建造塔数: 3
+```
+
+## 时间安排建议
+- **第1天**：完成地图初始化 + 净化进度计算
+- **第2天**：完成GameLoop + 控制台测试程序
+- **第3天**：运行测试，调整数值平衡
+- **第4天**：完善输出格式，准备进入U
