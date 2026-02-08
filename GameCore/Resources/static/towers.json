@@ -4,17 +4,21 @@
       "id": 1,
       "name": "基础净化塔",
       "cost": 10,
-      "cleanPower": 2.0,
+      "cleanPower": 1.0,
       "range": 2,
-      "maxDurability": 100
+      "maxDurability": 10,
+      "corrosionResistance": 0.5,
+      "decayFactor": 0.3
     },
     {
       "id": 2,
       "name": "高效净化塔",
-      "cost": 20,
-      "cleanPower": 5.0,
+      "cost": 25,
+      "cleanPower": 2.5,
       "range": 3,
-      "maxDurability": 80
+      "maxDurability": 9,
+      "corrosionResistance": 1.0,
+      "decayFactor": 0.3
     }
   ]
 }

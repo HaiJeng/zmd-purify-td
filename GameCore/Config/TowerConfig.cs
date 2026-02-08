@@ -1,19 +1,37 @@
 namespace GameCore.Config;
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class TowerConfig
 {
-    public required int id { get; set; }
-    public required string name { get; set; }
-    public required float cost { get; set; }
-    public required float cleanPower { get; set; }
-    public required int range { get; set; }
-    public required float maxDurability { get; set; }
+    [JsonPropertyName("id")]
+    public required int Id { get; set; }
+    
+    [JsonPropertyName("name")]
+    public required string Name { get; set; }
+    
+    [JsonPropertyName("cost")]
+    public required float Cost { get; set; }
+    
+    [JsonPropertyName("cleanPower")]
+    public required float CleanPower { get; set; }
+    
+    [JsonPropertyName("range")]
+    public required int Range { get; set; }
+    
+    [JsonPropertyName("maxDurability")]
+    public required float MaxDurability { get; set; }
+    
+    [JsonPropertyName("corrosionResistance")]
+    public float CorrosionResistance { get; set; } = 1.0f;
+    
+    [JsonPropertyName("decayFactor")]
+    public float DecayFactor { get; set; } = 0.3f;
 }
 public class ConfigLoader
 {
-    public List<TowerConfig> LoadTowers(string jsonPath)
+    public static List<TowerConfig> LoadTowers(string jsonPath)
     {
         Assert.IsTrue(File.Exists(jsonPath), new FileNotFoundException($"配置文件未找到: {jsonPath}"));
 
@@ -30,7 +48,7 @@ public class ConfigLoader
         // 检查是否有任何塔配置缺失必要字段
         foreach (var tower in towers)
         {
-            Assert.IsNotBlank(tower.name, new InvalidOperationException($"塔配置中存在空的 name 字段: ID {tower.id}"));
+            Assert.IsNotBlank(tower.Name, new InvalidOperationException($"塔配置中存在空的 name 字段: ID {tower.Id}"));
         }
 
         return towers;

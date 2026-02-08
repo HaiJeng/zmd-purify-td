@@ -1,17 +1,28 @@
 // 净化塔
 namespace GameCore.Tower;
-public class Tower {
-    public int gridX, gridY;    //部署位置
-    public float cleanPower;      // 净化力，每回合净化周围格子的污染值
-    public int range;             // 范围，净化力作用的格子半径
-    public float durability;      // 耐久，被污染会下降
-    public float maxDurability; // 最大耐久
+
+using GameCore.Config;
+
+public class Tower
+{
+    public int gridX, gridY;    // 部署位置
+    public TowerConfig config;  // 塔配置引用
     
-    public Tower(int x, int y, float cleanPower, int range) {
-        gridX = x; gridY = y;
-        this.cleanPower = cleanPower;
-        this.range = range;
-        maxDurability = 100f;
+    public float durability;      // 当前耐久
+    public float maxDurability;   // 最大耐久
+    
+    public Tower(int x, int y, TowerConfig config)
+    {
+        gridX = x;
+        gridY = y;
+        this.config = config;
+        maxDurability = config.MaxDurability;
         durability = maxDurability;
     }
+    
+    // 便捷属性访问
+    public float CleanPower => config.CleanPower;
+    public int Range => config.Range;
+    public float CorrosionResistance => config.CorrosionResistance;
+    public float DecayFactor => config.DecayFactor;
 }

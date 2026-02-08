@@ -4,7 +4,7 @@ public class BacklashSystem
 {
     private bool isBacklashActive = false;
     private float backlashTimer = 0f;
-
+    public bool IsBacklashActive => isBacklashActive;
     public void CheckAndTriggerBacklash(float purificationProgress)
     {
         if (purificationProgress >= 0.5f && !isBacklashActive)
