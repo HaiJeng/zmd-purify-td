@@ -1,9 +1,11 @@
 # 阶段 1.5：控制台验证计划
 
 ## 目标
+
 在 Unity 开发之前，通过控制台程序验证核心玩法循环的逻辑正确性和数值平衡性。
 
 ## 当前已完成
+
 - [x] 阶段1规则文档完成
 - [x] C#核心逻辑框架搭建
   - GridCell、Tower数据结构
@@ -17,8 +19,10 @@
 ### 1. 补充缺失的C#逻辑模块
 
 #### 1.1 地图初始化逻辑
+
 **文件**：`src/GameCore/Grid/GridFactory.cs`
 **任务**：
+
 - 实现 `CreateDefaultGrid(int width, int height)` 方法
 - 按规则生成12×12地图
 - 中心4×4为安全区（pollution=0）
@@ -58,8 +62,10 @@ public static class GridFactory
 ```
 
 #### 1.2 净化进度计算
+
 **文件**：`src/GameCore/Core/PurificationSystem.cs`
 **任务**：
+
 - 添加 `CalculatePurificationProgress()` 方法
 - 计算全局净化度（0-1）
 
@@ -83,26 +89,38 @@ public float CalculatePurificationProgress()
 ```
 
 #### 1.3 回合控制器
+
 **文件**：`src/GameCore/Core/GameLoop.cs`
 **任务**：
+
 - 整合所有系统
-- 实现回合制游戏循环
+- 实现实时游戏循环
 - 处理胜负判断
+- 实现GameResult枚举状态管理
 
 ```csharp
 public class GameLoop
 {
-    private GridCell[,] grid;
-    private List<Tower> towers = new();
-    private ResourceManager resource = new();
-    private PurificationSystem purification;
-    private BacklashSystem backlash = new();
+    private readonly GridCell[,] grid;
+    private readonly List<Tower> towers = [];
+    private readonly ResourceManager resource = new();
+    private readonly PurificationSystem purification;
+    private readonly BacklashSystem backlash = new();
     private float time = 0f;
+    // 获取当前时间
+    public float CurrentTime => time;
+    // 获取当前资源
+    public float CurrentResources => resource.CurrentResources;
+    // 获取净化进度
+    public float PurificationProgress => purification.CalculatePurificationProgress();
+    // 判断是否反扑
+    public bool IsBacklashActive => backlash.IsBacklashActive;
 
-    public GameLoop(int width, int height)
+    public GameLoop(int width, int height, float initResources)
     {
         grid = GridFactory.CreateDefaultGrid(width, height);
         purification = new PurificationSystem(grid, towers);
+        resource = new ResourceManager(initResources);
     }
 
     public void Tick(float deltaTime)
@@ -145,7 +163,9 @@ public class GameLoop
 
         if (isWin)
         {
-            Console.WriteLine($"🎉 胜利！用时 {time} 秒");
+            IsGameOver = true;
+            GameResult = GameResult.Win;
+            Console.WriteLine($"{GameResult.GetDisplayText()} 用时 {time} 秒");
             return;
         }
 
@@ -155,34 +175,36 @@ public class GameLoop
 
         if (allTowersBroken && cannotRebuild)
         {
-            Console.WriteLine($"💀 失败！净化能力丧失，用时 {time} 秒");
+            IsGameOver = true;
+            GameResult = GameResult.Lose;
+            Console.WriteLine($"{GameResult.GetDisplayText()} 净化能力丧失，用时 {time} 秒");
         }
     }
 
     public void PlaceTower(int x, int y, TowerConfig config)
     {
-        if (resource.SpendResources(config.cost))
+        if (resource.SpendResources(config.Cost) && grid[x, y].Pollution == 0)
         {
-            var tower = new Tower(x, y, config.cleanPower, config.range)
-            {
-                maxDurability = config.maxDurability,
-                durability = config.maxDurability
-            };
+            var tower = new Tower(x, y, config);
             towers.Add(tower);
-            Console.WriteLine($"🏗️ 在 ({x},{y}) 建造塔，剩余资源: {resource.CurrentResources}");
+            Console.WriteLine($"🏗️ 在 ({x},{y}) 建造{config.Name}，剩余资源: {resource.CurrentResources}");
         }
         else
         {
-            Console.WriteLine("❌ 资源不足！");
+            Console.WriteLine("❌ 资源不足或位置不合法！");
         }
     }
+    public bool IsGameOver { get; private set; }
+    public GameResult GameResult { get; private set; } = GameResult.NotFinished;
 }
 ```
 
 ### 2. 控制台测试程序
 
 #### 2.1 创建测试项目
+
 **文件**：`src/GameCore.ConsoleTest/GameCore.ConsoleTest.csproj`
+
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -196,7 +218,9 @@ public class GameLoop
 ```
 
 #### 2.2 测试脚本
+
 **文件**：`src/GameCore.ConsoleTest/Program.cs`
+
 ```csharp
 using GameCore.Core;
 using GameCore.Config;
@@ -210,26 +234,26 @@ class Program
 
         // 加载配置
         var configLoader = new ConfigLoader();
-        var towerConfigs = configLoader.LoadTowers("resource/static/towers.json");
+        var towerConfigs = ConfigLoader.LoadTowers("../GameCore/Resources/static/towers.json");
 
         // 初始化游戏
-        var game = new GameLoop(12, 12);
+        var game = new GameLoop(12, 12, 20f);  // 12x12地图，初始资源20
         
         // 初始状态
-        Console.WriteLine($"初始资源: 20");
+        Console.WriteLine($"初始资源: {game.CurrentResources}");
         Console.WriteLine($"地图尺寸: 12×12");
         Console.WriteLine($"安全区: 中心 4×4\n");
 
         // 模拟游戏流程
         Console.WriteLine("开始模拟游戏流程...\n");
         
-        // 前10回合：观察资源增长
+        // 前10秒：观察资源增长
         for (int i = 0; i < 10; i++)
         {
             game.Tick(1.0f);
             if (i % 5 == 0)
             {
-                Console.WriteLine($"第 {i} 回合 - 资源: 待实现");
+                Console.WriteLine($"第 {i} 秒 - 资源: {game.CurrentResources}");
             }
         }
 
@@ -242,8 +266,16 @@ class Program
         while (true)
         {
             game.Tick(1.0f);
+
+            if(game.IsBacklashActive)
+            {
+                Console.WriteLine($"第 {game.CurrentTime} 秒 - 反扑触发");
+            }
+            
             // 这里需要添加进度显示逻辑
-            break; // 暂时跳出避免无限循环
+            if (game.IsGameOver){
+                break;
+            }
         }
 
         Console.WriteLine("\n测试完成！");
@@ -254,23 +286,38 @@ class Program
 
 ### 3. 验证要点
 
+#### 3.0 已完成待验证
+
+- [X] 资源系统：起始20，每秒+2
+- [X] 建塔逻辑：检查资源、位置合法性、实例化
+- [x] 净化效果：塔范围内格子污染值下降
+- [x] 腐蚀机制：污染区塔耐久随时间下降
+- [x] 反扑触发：净化度50%时触发，持续10秒
+- [X] 胜利条件：所有格子污染=0
+- [X] 失败条件：塔全坏+资源不足
+- [X] GameResult枚举状态管理
+- [X] 塔配置系统集成
+
 #### 3.1 核心机制验证
-- [ ] 资源系统：起始20，每回合+2
-- [ ] 建塔逻辑：检查资源、位置、实例化
-- [ ] 净化效果：塔范围内格子污染值下降
-- [ ] 腐蚀机制：污染区塔耐久随时间下降
-- [ ] 反扑触发：净化度50%时触发，持续10回合
-- [ ] 胜利条件：所有格子污染=0
-- [ ] 失败条件：塔全坏+资源不足
+
+- [X] 资源系统：起始10，每秒+1（已调整）
+- [X] 建塔逻辑：检查资源、位置、实例化
+- [X] 净化效果：塔范围内格子污染值下降
+- [X] 腐蚀机制：污染区塔耐久随时间下降（已增强）
+- [X] 反扑触发：净化度50%时触发，持续10秒
+- [X] 胜利条件：所有格子污染=0
+- [X] 失败条件：塔全坏+资源不足
 
 #### 3.2 数值平衡测试
-- [ ] 塔的净化效率是否合理
-- [ ] 塔耐久消耗速率是否平衡
-- [ ] 反扑事件强度是否适中
+
+- [X] 塔的净化效率是否合理（已降低基础塔效率）
+- [X] 塔耐久消耗速率是否平衡（已增强腐蚀效果）
+- [X] 反扑事件强度是否适中（资源减半机制已实现）
 - [ ] 游戏时长是否在合理范围（建议30-60分钟）
 
 ### 4. 预期输出格式
-```
+
+```log
 === 2D 净化塔防控制台测试 ===
 
 初始资源: 20
@@ -279,33 +326,46 @@ class Program
 
 开始模拟游戏流程...
 
-第 0 回合 - 资源: 20, 净化度: 0%
-第 5 回合 - 资源: 30, 净化度: 12%
-第 10 回合 - 资源: 40, 净化度: 25%
+第 0 秒 - 资源: 20, 净化度: 0%
+第 5 秒 - 资源: 30, 净化度: 12%
+第 10 秒 - 资源: 40, 净化度: 25%
 
 --- 建造第一座基础净化塔 ---
-🏗️ 在 (5,5) 建造塔，剩余资源: 30
+🏗️ 在 (5,5) 建造基础净化塔，剩余资源: 30
 
 --- 净化进行中 ---
-第 15 回合 - 资源: 32, 净化度: 38%
-第 20 回合 - 资源: 34, 净化度: 45%
-第 25 回合 - 资源: 36, 净化度: 52% ⚠️ 触发反扑！
+第 15 秒 - 资源: 32, 净化度: 38%
+第 20 秒 - 资源: 34, 净化度: 45%
+第 25 秒 - 资源: 36, 净化度: 52% ⚠️ 触发反扑！
 
 --- 反扑期间 ---
-第 30 回合 - 资源: 38, 净化度: 55% (净化效率减半)
-第 35 回合 - 资源: 40, 净化度: 58%
+第 30 秒 - 资源: 38, 净化度: 55% (净化效率减半)
+第 35 秒 - 资源: 40, 净化度: 58%
 
 --- 反扑结束 ---
-第 40 回合 - 资源: 42, 净化度: 65% (恢复正常)
+第 40 秒 - 资源: 42, 净化度: 65% (恢复正常)
 
-第 50 回合 - 资源: 44, 净化度: 80%
-第 60 回合 - 资源: 46, 净化度: 95%
+第 50 秒 - 资源: 44, 净化度: 80%
+第 60 秒 - 资源: 46, 净化度: 95%
 
-🎉 胜利！用时 60 秒，建造塔数: 3
+🎉 胜利！用时 65 秒，建造塔数: 3
 ```
 
 ## 时间安排建议
+
 - **第1天**：完成地图初始化 + 净化进度计算
 - **第2天**：完成GameLoop + 控制台测试程序
 - **第3天**：运行测试，调整数值平衡
-- **第4天**：完善输出格式，准备进入U
+- **第4天**：完善输出格式，准备进入Unity阶段
+
+## 验收标准
+
+- [ ] 控制台程序可正常编译运行
+- [ ] 所有核心机制逻辑正确
+- [ ] 数值平衡性通过测试验证
+- [ ] 输出日志清晰可读
+- [ ] 游戏流程完整可跑通
+
+## 下一步
+
+控制台验证通过后，即可进入阶段2：Unity 2D玩法原型开发。
